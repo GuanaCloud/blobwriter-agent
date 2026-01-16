@@ -6,3 +6,5 @@ pandas
 tabulate
 tqdm
 scikit-learn
+google-genai
+Pillow

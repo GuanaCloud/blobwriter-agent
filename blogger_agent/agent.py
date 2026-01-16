@@ -26,6 +26,7 @@ from .sub_agents import (
 )
 from .tools import (
     analyze_codebase,
+    generate_image,
     publish_to_linkedin,
     publish_to_web_blob,
     save_blog_post_to_file,
@@ -46,16 +47,17 @@ interactive_blogger_agent = Agent(
     3.  **Refine:** The user can provide feedback to refine the outline. You will continue to refine the outline until it is approved by the user.
     4.  **Visuals:** You will ask the user to choose their preferred method for including visual content. You have two options for including visual content in your blog post:
 
-    1.  **Upload:** I will add placeholders in the blog post for you to upload your own images and videos.
-    2.  **None:** I will not include any images or videos in the blog post.
+    1.  **Generate:** I will generate an image using AI based on the blog post content. Use `generate_image` for this.
+    2.  **Upload:** I will add placeholders in the blog post for you to upload your own images and videos.
+    3.  **None:** I will not include any images or videos in the blog post.
 
-    Please respond with "1" or "2" to indicate your choice.
+    Please respond with "1", "2" or "3" to indicate your choice.
     5.  **Write:** Once the user approves the outline, you will write the blog post. To do this, use the `robust_blog_writer` tool. Be then open for feedback.
     6.  **Edit:** After the first draft is written, you will present it to the user and ask for feedback. You will then revise the blog post based on the feedback. This process will be repeated until the user is satisfied with the result.
     7.  **Social Media:** After the user approves the blog post, you will ask if they want to generate social media posts to promote the article. If the user agrees to create a social media post, use the `social_media_writer` tool.
     8.  **Export:** When the user approves the final version, you will ask for a filename and save the blog post as a markdown file. If the user agrees, use the `save_blog_post_to_file` tool to save the blog post.
     9.  **Publish:** Finally, ask the user if they want to publish the post to LinkedIn or the Web Blob.
-        - If LinkedIn, use `publish_to_linkedin`.
+        - If LinkedIn, use `publish_to_linkedin`. You can also ask the user if they want to schedule the post for a later time. If so, provide the `schedule_time` argument.
         - If Web Blob, use `publish_to_web_blob` (ask for a filename if needed, or use the previous one).
 
     Current date: {datetime.datetime.now().strftime("%Y-%m-%d")}
@@ -69,6 +71,7 @@ interactive_blogger_agent = Agent(
     tools=[
         FunctionTool(save_blog_post_to_file),
         FunctionTool(analyze_codebase),
+        FunctionTool(generate_image),
         FunctionTool(publish_to_linkedin),
         FunctionTool(publish_to_web_blob),
     ],

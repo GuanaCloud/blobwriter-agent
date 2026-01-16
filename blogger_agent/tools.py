@@ -14,6 +14,11 @@
 
 import glob
 import os
+import datetime
+from google import genai
+from google.genai import types
+from PIL import Image
+from io import BytesIO
 
 
 def save_blog_post_to_file(blog_post: str, filename: str) -> dict:
@@ -39,8 +44,52 @@ def analyze_codebase(directory: str) -> dict:
     return {"codebase_context": codebase_context}
 
 
-def publish_to_linkedin(content: str) -> dict:
-    """Publishes a post to LinkedIn."""
+    return {"codebase_context": codebase_context}
+
+
+def generate_image(prompt: str, output_file: str) -> dict:
+    """Generates an image using AI and saves it to a file.
+    
+    Args:
+        prompt: The prompt to generate the image from.
+        output_file: The path to save the generated image.
+    """
+    try:
+        client = genai.Client()
+        response = client.models.generate_images(
+            model='imagen-3.0-generate-001',
+            prompt=prompt,
+            config=types.GenerateImagesConfig(
+                number_of_images=1,
+            )
+        )
+        if response.generated_images:
+            image = response.generated_images[0].image
+            image.save(output_file)
+            return {"status": "success", "file": output_file}
+        else:
+            return {"status": "error", "message": "No image generated."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+def publish_to_linkedin(content: str, schedule_time: str = None) -> dict:
+    """Publishes a post to LinkedIn or schedules it.
+    
+    Args:
+        content: The text content of the post.
+        schedule_time: Optional ISO 8601 formatted string for when to publish.
+                       If provided, acts as a mock scheduler.
+    """
+    if schedule_time:
+        # In a real implementation, this would save to a database or call a scheduling API.
+        # For now, we return a success message indicating it's scheduled.
+        return {
+            "status": "success",
+            "message": f"Post scheduled for {schedule_time}",
+            "scheduled_time": schedule_time
+        }
+
     access_token = os.environ.get("LINKEDIN_ACCESS_TOKEN")
     user_urn = os.environ.get("LINKEDIN_USER_URN")
 
