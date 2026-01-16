@@ -1,16 +1,10 @@
-name: Deploy BlobWriter Agent
+name: Deploy bloblwriter Agent
 
 on:
   push:
     branches:
       - develop
       - main
-    paths:
-      - 'src/**'
-      - 'main.py'
-      - 'Dockerfile'
-      - 'requirements.txt'
-      - '.github/workflows/deploy_v2.yml'
 
 env:
   PROJECT_ID: diria-core-app
@@ -42,28 +36,27 @@ jobs:
             echo "Ambiente: PRODUCCION 🚀"
             echo "SERVICE_NAME=blobwriter-agent-prod" >> $GITHUB_ENV
             echo "CLOUD_RUN_FLAGS=--allow-unauthenticated --memory=2Gi --cpu=2 --min-instances=1" >> $GITHUB_ENV
-            # echo "DB_INSTANCE_NAME=diria-postgres" >> $GITHUB_ENV
-            # echo "DB_NAME=diria_prod" >> $GITHUB_ENV 
-            # echo "DB_PASS_SECRET_NAME=diria-postgres-password-prod" >> $GITHUB_ENV
-            # echo "FIRESTORE_DB_ID=agentdiria-core" >> $GITHUB_ENV
-            # echo "FIRESTORE_SESSION_COLLECTION=diria_v2_graph_state_prod" >> $GITHUB_ENV
+            echo "DB_INSTANCE_NAME=diria-postgres" >> $GITHUB_ENV
+            echo "DB_NAME=diria_prod" >> $GITHUB_ENV 
+            echo "DB_PASS_SECRET_NAME=diria-postgres-password-prod" >> $GITHUB_ENV
+            echo "FIRESTORE_DB_ID=agentdiria-core" >> $GITHUB_ENV
+            echo "FIRESTORE_SESSION_COLLECTION=diria_v2_graph_state_prod" >> $GITHUB_ENV
             
           else
             echo "Ambiente: DESARROLLO 🛠️"
             echo "SERVICE_NAME=blobwriter-agent-dev" >> $GITHUB_ENV
             echo "CLOUD_RUN_FLAGS=--allow-unauthenticated --memory=2Gi --cpu=2" >> $GITHUB_ENV
-            # echo "DB_INSTANCE_NAME=diria-postgres" >> $GITHUB_ENV
-            # echo "DB_NAME=diria_dev" >> $GITHUB_ENV
-            # echo "DB_PASS_SECRET_NAME=diria-postgres-password-dev" >> $GITHUB_ENV
-            # echo "FIRESTORE_DB_ID=agentdiria-core-dev" >> $GITHUB_ENV
-            # echo "FIRESTORE_SESSION_COLLECTION=diria_v2_graph_state_dev" >> $GITHUB_ENV
+            echo "DB_INSTANCE_NAME=diria-postgres" >> $GITHUB_ENV
+            echo "DB_NAME=diria_dev" >> $GITHUB_ENV
+            echo "DB_PASS_SECRET_NAME=diria-postgres-password-dev" >> $GITHUB_ENV
+            echo "FIRESTORE_DB_ID=agentdiria-core-dev" >> $GITHUB_ENV
+            echo "FIRESTORE_SESSION_COLLECTION=diria_v2_graph_state_dev" >> $GITHUB_ENV
           fi
 
       - name: Build Docker Image
         run: |
           IMAGE_TAG=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          docker pull ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:latest || true
-          docker build -f Dockerfile -t $IMAGE_TAG --cache-from ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:latest .
+          docker build -f Dockerfile -t $IMAGE_TAG .
 
       - name: Push Docker Image
         run: |
@@ -82,18 +75,18 @@ jobs:
           env_vars: |-
             GCP_PROJECT_ID=${{ env.PROJECT_ID }}
             LOCATION=${{ env.REGION }}
-            # GEMINI_MODEL_ID=gemini-2.5-flash
-            # FIRESTORE_DATABASE_ID=${{ env.FIRESTORE_DB_ID }}
-            # FIRESTORE_SESSION_COLLECTION=${{ env.FIRESTORE_SESSION_COLLECTION }}
-            # DB_USER=postgres
-            # DB_NAME=${{ env.DB_NAME }}
-            # DB_CONNECTION_NAME=${{ env.PROJECT_ID }}:${{ env.REGION }}:${{ env.DB_INSTANCE_NAME }}
-            # DB_POOL_SIZE=5
-            # APP_BASE_URL=${{ env.APP_BASE_URL }}
-            # GCS_ATTACHMENT_BUCKET=diria-tiquete-attachments
-            # APP_EMAIL_SENDER_IDENTITY=jose.solano@guanacloud.com
-            # EMBEDDING_MODEL_NAME=text-embedding-005
-            # KNOWLEDGE_BASE_BUCKET=diria-knowledge-base
+            GEMINI_MODEL_ID=gemini-3-flash-preview
+            FIRESTORE_DATABASE_ID=${{ env.FIRESTORE_DB_ID }}
+            FIRESTORE_SESSION_COLLECTION=${{ env.FIRESTORE_SESSION_COLLECTION }}
+            DB_USER=postgres
+            DB_NAME=${{ env.DB_NAME }}
+            DB_CONNECTION_NAME=${{ env.PROJECT_ID }}:${{ env.REGION }}:${{ env.DB_INSTANCE_NAME }}
+            DB_POOL_SIZE=5
+            APP_BASE_URL=${{ env.APP_BASE_URL }}
+            GCS_ATTACHMENT_BUCKET=diria-tiquete-attachments
+            APP_EMAIL_SENDER_IDENTITY=jose.solano@guanacloud.com
+            EMBEDDING_MODEL_NAME=gemini-embedding-001
+            KNOWLEDGE_BASE_BUCKET=diria-knowledge-base
             
-          # secrets: |-
-            # DB_PASS=${{ env.DB_PASS_SECRET_NAME }}:latest
+          secrets: |-
+            DB_PASS=${{ env.DB_PASS_SECRET_NAME }}:latest
