@@ -39,7 +39,7 @@ class ResearchConfiguration:
     """
 
     critic_model: str = "gemini-2.5-pro"
-    worker_model: str = os.getenv("GEMINI_MODEL_ID", "gemini-2.0-flash")
+    worker_model: str = os.getenv("GEMINI_MODEL_ID", "gemini-2.5-flash")
     max_search_iterations: int = 5
 
 

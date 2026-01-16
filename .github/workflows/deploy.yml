@@ -35,7 +35,7 @@ jobs:
           if [[ $GITHUB_REF_NAME == 'main' ]]; then
             echo "Ambiente: PRODUCCION 🚀"
             echo "SERVICE_NAME=blobwriter-agent-prod" >> $GITHUB_ENV
-            echo "CLOUD_RUN_FLAGS=--allow-unauthenticated --memory=2Gi --cpu=2 --min-instances=1" >> $GITHUB_ENV
+            echo "CLOUD_RUN_FLAGS=--allow-unauthenticated --memory=4Gi --cpu=2 --min-instances=1" >> $GITHUB_ENV
             echo "DB_INSTANCE_NAME=diria-postgres" >> $GITHUB_ENV
             echo "DB_NAME=diria_prod" >> $GITHUB_ENV 
             echo "DB_PASS_SECRET_NAME=diria-postgres-password-prod" >> $GITHUB_ENV
@@ -45,7 +45,7 @@ jobs:
           else
             echo "Ambiente: DESARROLLO 🛠️"
             echo "SERVICE_NAME=blobwriter-agent-dev" >> $GITHUB_ENV
-            echo "CLOUD_RUN_FLAGS=--allow-unauthenticated --memory=2Gi --cpu=2" >> $GITHUB_ENV
+            echo "CLOUD_RUN_FLAGS=--allow-unauthenticated --memory=4Gi --cpu=2" >> $GITHUB_ENV
             echo "DB_INSTANCE_NAME=diria-postgres" >> $GITHUB_ENV
             echo "DB_NAME=diria_dev" >> $GITHUB_ENV
             echo "DB_PASS_SECRET_NAME=diria-postgres-password-dev" >> $GITHUB_ENV
