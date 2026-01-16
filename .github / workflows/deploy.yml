@@ -1,0 +1,98 @@
+name: Deploy BlobWriter Agent
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - 'src/**'
+      - 'main.py'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - '.github/workflows/deploy_v2.yml'
+
+env:
+  PROJECT_ID: diria-core-app
+  REGION: us-central1
+  REPO_NAME: blobwriter-agent
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v1'
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Set Environment Variables
+        run: |
+          if [[ $GITHUB_REF_NAME == 'main' ]]; then
+            echo "Ambiente: PRODUCCION 🚀"
+            echo "SERVICE_NAME=blobwriter-agent-prod" >> $GITHUB_ENV
+            echo "CLOUD_RUN_FLAGS=--allow-unauthenticated --memory=2Gi --cpu=2 --min-instances=1" >> $GITHUB_ENV
+            # echo "DB_INSTANCE_NAME=diria-postgres" >> $GITHUB_ENV
+            # echo "DB_NAME=diria_prod" >> $GITHUB_ENV 
+            # echo "DB_PASS_SECRET_NAME=diria-postgres-password-prod" >> $GITHUB_ENV
+            # echo "FIRESTORE_DB_ID=agentdiria-core" >> $GITHUB_ENV
+            # echo "FIRESTORE_SESSION_COLLECTION=diria_v2_graph_state_prod" >> $GITHUB_ENV
+            
+          else
+            echo "Ambiente: DESARROLLO 🛠️"
+            echo "SERVICE_NAME=blobwriter-agent-dev" >> $GITHUB_ENV
+            echo "CLOUD_RUN_FLAGS=--allow-unauthenticated --memory=2Gi --cpu=2" >> $GITHUB_ENV
+            # echo "DB_INSTANCE_NAME=diria-postgres" >> $GITHUB_ENV
+            # echo "DB_NAME=diria_dev" >> $GITHUB_ENV
+            # echo "DB_PASS_SECRET_NAME=diria-postgres-password-dev" >> $GITHUB_ENV
+            # echo "FIRESTORE_DB_ID=agentdiria-core-dev" >> $GITHUB_ENV
+            # echo "FIRESTORE_SESSION_COLLECTION=diria_v2_graph_state_dev" >> $GITHUB_ENV
+          fi
+
+      - name: Build Docker Image
+        run: |
+          IMAGE_TAG=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker build -f Dockerfile -t $IMAGE_TAG .
+
+      - name: Push Docker Image
+        run: |
+          IMAGE_TAG=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker push $IMAGE_TAG
+
+      - name: Deploy to Cloud Run
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          flags: ${{ env.CLOUD_RUN_FLAGS }}
+          
+          
+          env_vars: |-
+            GCP_PROJECT_ID=${{ env.PROJECT_ID }}
+            LOCATION=${{ env.REGION }}
+            # GEMINI_MODEL_ID=gemini-2.5-flash
+            # FIRESTORE_DATABASE_ID=${{ env.FIRESTORE_DB_ID }}
+            # FIRESTORE_SESSION_COLLECTION=${{ env.FIRESTORE_SESSION_COLLECTION }}
+            # DB_USER=postgres
+            # DB_NAME=${{ env.DB_NAME }}
+            # DB_CONNECTION_NAME=${{ env.PROJECT_ID }}:${{ env.REGION }}:${{ env.DB_INSTANCE_NAME }}
+            # DB_POOL_SIZE=5
+            # APP_BASE_URL=${{ env.APP_BASE_URL }}
+            # GCS_ATTACHMENT_BUCKET=diria-tiquete-attachments
+            # APP_EMAIL_SENDER_IDENTITY=jose.solano@guanacloud.com
+            # EMBEDDING_MODEL_NAME=text-embedding-005
+            # KNOWLEDGE_BASE_BUCKET=diria-knowledge-base
+            
+          # secrets: |-
+            # DB_PASS=${{ env.DB_PASS_SECRET_NAME }}:latest
