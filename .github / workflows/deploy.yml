@@ -62,7 +62,8 @@ jobs:
       - name: Build Docker Image
         run: |
           IMAGE_TAG=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          docker build -f Dockerfile -t $IMAGE_TAG .
+          docker pull ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:latest || true
+          docker build -f Dockerfile -t $IMAGE_TAG --cache-from ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:latest .
 
       - name: Push Docker Image
         run: |
