@@ -75,7 +75,7 @@ jobs:
           env_vars: |-
             GCP_PROJECT_ID=${{ env.PROJECT_ID }}
             LOCATION=${{ env.REGION }}
-            GEMINI_MODEL_ID=gemini-3-flash-preview
+            GEMINI_MODEL_ID=gemini-2.5-flash
             FIRESTORE_DATABASE_ID=${{ env.FIRESTORE_DB_ID }}
             FIRESTORE_SESSION_COLLECTION=${{ env.FIRESTORE_SESSION_COLLECTION }}
             DB_USER=postgres
