@@ -87,6 +87,9 @@ jobs:
             APP_EMAIL_SENDER_IDENTITY=jose.solano@guanacloud.com
             EMBEDDING_MODEL_NAME=gemini-embedding-001
             KNOWLEDGE_BASE_BUCKET=diria-knowledge-base
+            LINKEDIN_USER_URN=${{ vars.LINKEDIN_USER_URN }}
+            BLOG_BUCKET_NAME=${{ vars.BLOG_BUCKET_NAME }}
             
           secrets: |-
             DB_PASS=${{ env.DB_PASS_SECRET_NAME }}:latest
+            LINKEDIN_ACCESS_TOKEN=LINKEDIN_ACCESS_TOKEN:latest
